@@ -1,0 +1,797 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contact Form with Validation</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .form-container {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            padding: 40px;
+            width: 100%;
+            max-width: 500px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .form-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+        }
+
+        .form-title {
+            text-align: center;
+            color: #333;
+            margin-bottom: 30px;
+            font-size: 28px;
+            font-weight: 700;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+            position: relative;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            color: #555;
+            font-weight: 600;
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 15px 20px;
+            border: 2px solid #e1e5e9;
+            border-radius: 12px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            background: #f8f9fa;
+            outline: none;
+        }
+
+        .form-input:focus {
+            border-color: #667eea;
+            background: #fff;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+            transform: translateY(-2px);
+        }
+
+        .form-input.error {
+            border-color: #e74c3c;
+            background: #fdf2f2;
+            animation: shake 0.5s ease-in-out;
+        }
+
+        .form-input.success {
+            border-color: #27ae60;
+            background: #f2f9f2;
+        }
+
+        textarea.form-input {
+            resize: vertical;
+            min-height: 120px;
+            font-family: inherit;
+        }
+
+        .error-message {
+            color: #e74c3c;
+            font-size: 12px;
+            margin-top: 5px;
+            display: flex;
+            align-items: center;
+            opacity: 0;
+            transform: translateY(-10px);
+            transition: all 0.3s ease;
+        }
+
+        .error-message.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .error-icon {
+            margin-right: 5px;
+            font-size: 14px;
+        }
+
+        .submit-btn {
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
+        }
+
+        .submit-btn:active {
+            transform: translateY(0);
+        }
+
+        .submit-btn:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .loading-spinner {
+            display: none;
+            margin-right: 10px;
+            animation: spin 1s linear infinite;
+        }
+
+        .success-message {
+            background: linear-gradient(135deg, #27ae60, #2ecc71);
+            color: white;
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+            margin-top: 20px;
+            display: none;
+            animation: slideIn 0.5s ease-out;
+        }
+
+        .success-icon {
+            font-size: 48px;
+            margin-bottom: 10px;
+            animation: bounce 0.6s ease-out;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+            40% { transform: translateY(-10px); }
+            60% { transform: translateY(-5px); }
+        }
+
+        .form-stats {
+            margin-top: 20px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            font-size: 12px;
+            color: #666;
+        }
+
+        .char-counter {
+            font-size: 11px;
+            color: #999;
+            text-align: right;
+            margin-top: 5px;
+        }
+
+        .char-counter.warning {
+            color: #f39c12;
+        }
+
+        .char-counter.danger {
+            color: #e74c3c;
+        }
+
+        @media (max-width: 600px) {
+            .form-container {
+                padding: 25px;
+                margin: 10px;
+            }
+            
+            .form-title {
+                font-size: 24px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="form-container">
+        <h1 class="form-title">Contact Us</h1>
+        
+        <form id="contactForm" novalidate>
+            <div class="form-group">
+                <label for="name" class="form-label">Full Name</label>
+                <input type="text" id="name" name="name" class="form-input" placeholder="Enter your full name">
+                <div class="error-message" id="nameError">
+                    <span class="error-icon">⚠</span>
+                    <span class="error-text"></span>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="email" class="form-label">Email Address</label>
+                <input type="email" id="email" name="email" class="form-input" placeholder="Enter your email address">
+                <div class="error-message" id="emailError">
+                    <span class="error-icon">⚠</span>
+                    <span class="error-text"></span>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="message" class="form-label">Message</label>
+                <textarea id="message" name="message" class="form-input" placeholder="Enter your message here..." maxlength="1000"></textarea>
+                <div class="char-counter" id="charCounter">0 / 1000 characters</div>
+                <div class="error-message" id="messageError">
+                    <span class="error-icon">⚠</span>
+                    <span class="error-text"></span>
+                </div>
+            </div>
+
+            <button type="submit" class="submit-btn" id="submitBtn">
+                <span class="loading-spinner" id="loadingSpinner">⟳</span>
+                <span id="btnText">Send Message</span>
+            </button>
+        </form>
+
+        <div class="success-message" id="successMessage">
+            <div class="success-icon">✅</div>
+            <h3>Message Sent Successfully!</h3>
+            <p>Thank you for contacting us. We'll get back to you soon.</p>
+        </div>
+
+        <div class="form-stats" id="formStats" style="display: none;">
+            <strong>Validation Summary:</strong><br>
+            <span id="statsContent"></span>
+        </div>
+    </div>
+
+    <script>
+        class ContactFormValidator {
+            constructor() {
+                this.form = document.getElementById('contactForm');
+                this.nameInput = document.getElementById('name');
+                this.emailInput = document.getElementById('email');
+                this.messageInput = document.getElementById('message');
+                this.submitBtn = document.getElementById('submitBtn');
+                this.successMessage = document.getElementById('successMessage');
+                
+                this.validationRules = {
+                    name: {
+                        required: true,
+                        minLength: 2,
+                        maxLength: 50,
+                        pattern: /^[a-zA-Z\s'-]+$/,
+                        customValidation: this.validateName.bind(this)
+                    },
+                    email: {
+                        required: true,
+                        pattern: /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/,
+                        customValidation: this.validateEmail.bind(this)
+                    },
+                    message: {
+                        required: true,
+                        minLength: 10,
+                        maxLength: 1000,
+                        customValidation: this.validateMessage.bind(this)
+                    }
+                };
+
+                this.initializeEventListeners();
+                this.initializeCharacterCounter();
+            }
+
+            initializeEventListeners() {
+                this.form.addEventListener('submit', this.handleSubmit.bind(this));
+                
+                this.nameInput.addEventListener('blur', () => this.validateField('name'));
+                this.nameInput.addEventListener('input', () => this.clearFieldError('name'));
+                
+                this.emailInput.addEventListener('blur', () => this.validateField('email'));
+                this.emailInput.addEventListener('input', () => this.clearFieldError('email'));
+                
+                this.messageInput.addEventListener('blur', () => this.validateField('message'));
+                this.messageInput.addEventListener('input', () => {
+                    this.clearFieldError('message');
+                    this.updateCharacterCounter();
+                });
+
+                this.nameInput.addEventListener('input', this.debounce(() => this.validateField('name'), 500));
+                this.emailInput.addEventListener('input', this.debounce(() => this.validateField('email'), 800));
+            }
+
+            initializeCharacterCounter() {
+                const charCounter = document.getElementById('charCounter');
+                const maxLength = parseInt(this.messageInput.getAttribute('maxlength'));
+                
+                this.messageInput.addEventListener('input', () => {
+                    const currentLength = this.messageInput.value.length;
+                    charCounter.textContent = `${currentLength} / ${maxLength} characters`;
+                    
+                    charCounter.className = 'char-counter';
+                    if (currentLength > maxLength * 0.8) {
+                        charCounter.classList.add('warning');
+                    }
+                    if (currentLength > maxLength * 0.95) {
+                        charCounter.classList.remove('warning');
+                        charCounter.classList.add('danger');
+                    }
+                });
+            }
+
+            updateCharacterCounter() {
+                const charCounter = document.getElementById('charCounter');
+                const currentLength = this.messageInput.value.length;
+                const maxLength = 1000;
+                
+                charCounter.textContent = `${currentLength} / ${maxLength} characters`;
+            }
+
+            debounce(func, wait) {
+                let timeout;
+                return function executedFunction(...args) {
+                    const later = () => {
+                        clearTimeout(timeout);
+                        func(...args);
+                    };
+                    clearTimeout(timeout);
+                    timeout = setTimeout(later, wait);
+                };
+            }
+
+            validateName(value) {
+                const trimmedValue = value.trim();
+                
+                if (!trimmedValue) {
+                    return 'Name is required';
+                }
+                
+                if (trimmedValue.length < 2) {
+                    return 'Name must be at least 2 characters long';
+                }
+                
+                if (trimmedValue.length > 50) {
+                    return 'Name must not exceed 50 characters';
+                }
+                
+                if (!/^[a-zA-Z\s'-]+$/.test(trimmedValue)) {
+                    return 'Name can only contain letters, spaces, hyphens, and apostrophes';
+                }
+                
+                if (trimmedValue.split(' ').length > 5) {
+                    return 'Please enter a valid name (too many words)';
+                }
+                
+                if (/\s{2,}/.test(trimmedValue)) {
+                    return 'Please remove extra spaces from your name';
+                }
+                
+                return null;
+            }
+
+            validateEmail(value) {
+                const trimmedValue = value.trim().toLowerCase();
+                
+                if (!trimmedValue) {
+                    return 'Email address is required';
+                }
+                
+                const emailRegex = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/;
+                
+                if (!emailRegex.test(trimmedValue)) {
+                    return 'Please enter a valid email address';
+                }
+                
+                if (trimmedValue.length > 254) {
+                    return 'Email address is too long';
+                }
+                
+                const localPart = trimmedValue.split('@')[0];
+                const domainPart = trimmedValue.split('@')[1];
+                
+                if (localPart.length > 64) {
+                    return 'Email address local part is too long';
+                }
+                
+                if (!domainPart || domainPart.length < 2) {
+                    return 'Please enter a valid domain name';
+                }
+                
+                if (domainPart.startsWith('.') || domainPart.endsWith('.')) {
+                    return 'Domain name cannot start or end with a dot';
+                }
+                
+                if (domainPart.includes('..')) {
+                    return 'Domain name cannot contain consecutive dots';
+                }
+                
+                const commonDomains = ['gmail.com', 'yahoo.com', 'hotmail.com', 'outlook.com', 'aol.com'];
+                const suspiciousDomains = ['test.com', 'example.com', 'temp.com'];
+                
+                if (suspiciousDomains.includes(domainPart)) {
+                    return 'Please enter a real email address';
+                }
+                
+                return null;
+            }
+
+            validateMessage(value) {
+                const trimmedValue = value.trim();
+                
+                if (!trimmedValue) {
+                    return 'Message is required';
+                }
+                
+                if (trimmedValue.length < 10) {
+                    return 'Message must be at least 10 characters long';
+                }
+                
+                if (trimmedValue.length > 1000) {
+                    return 'Message must not exceed 1000 characters';
+                }
+                
+                if (/(.)\1{4,}/.test(trimmedValue)) {
+                    return 'Please avoid excessive repetition of characters';
+                }
+                
+                const wordCount = trimmedValue.split(/\s+/).length;
+                if (wordCount < 3) {
+                    return 'Message should contain at least 3 words';
+                }
+                
+                if (wordCount > 200) {
+                    return 'Message is too long (maximum 200 words)';
+                }
+                
+                const spamPatterns = [
+                    /\b(buy now|click here|free money|guaranteed|no risk)\b/i,
+                    /\$+\d+/g,
+                    /[A-Z]{10,}/,
+                    /!{3,}/
+                ];
+                
+                for (let pattern of spamPatterns) {
+                    if (pattern.test(trimmedValue)) {
+                        return 'Message appears to contain spam-like content';
+                    }
+                }
+                
+                return null;
+            }
+
+            validateField(fieldName) {
+                const input = document.getElementById(fieldName);
+                const value = input.value;
+                const rules = this.validationRules[fieldName];
+                
+                let error = null;
+                
+                if (rules.customValidation) {
+                    error = rules.customValidation(value);
+                }
+                
+                if (error) {
+                    this.showFieldError(fieldName, error);
+                    return false;
+                } else {
+                    this.clearFieldError(fieldName);
+                    input.classList.add('success');
+                    return true;
+                }
+            }
+
+            showFieldError(fieldName, message) {
+                const input = document.getElementById(fieldName);
+                const errorElement = document.getElementById(fieldName + 'Error');
+                const errorText = errorElement.querySelector('.error-text');
+                
+                input.classList.remove('success');
+                input.classList.add('error');
+                
+                errorText.textContent = message;
+                errorElement.classList.add('show');
+            }
+
+            clearFieldError(fieldName) {
+                const input = document.getElementById(fieldName);
+                const errorElement = document.getElementById(fieldName + 'Error');
+                
+                input.classList.remove('error');
+                errorElement.classList.remove('show');
+            }
+
+            validateAllFields() {
+                const fields = ['name', 'email', 'message'];
+                let isValid = true;
+                const errors = [];
+                
+                fields.forEach(field => {
+                    const fieldValid = this.validateField(field);
+                    if (!fieldValid) {
+                        isValid = false;
+                        const input = document.getElementById(field);
+                        const errorElement = document.getElementById(field + 'Error');
+                        const errorText = errorElement.querySelector('.error-text').textContent;
+                        errors.push(`${field}: ${errorText}`);
+                    }
+                });
+                
+                this.updateFormStats(isValid, errors);
+                return isValid;
+            }
+
+            updateFormStats(isValid, errors) {
+                const statsDiv = document.getElementById('formStats');
+                const statsContent = document.getElementById('statsContent');
+                
+                if (errors.length > 0) {
+                    statsDiv.style.display = 'block';
+                    statsContent.innerHTML = `
+                        <span style="color: #e74c3c;">❌ ${errors.length} error(s) found:</span><br>
+                        ${errors.map(error => `• ${error}`).join('<br>')}
+                    `;
+                } else if (isValid) {
+                    statsDiv.style.display = 'block';
+                    statsContent.innerHTML = '<span style="color: #27ae60;">✅ All fields are valid!</span>';
+                    setTimeout(() => {
+                        statsDiv.style.display = 'none';
+                    }, 3000);
+                }
+            }
+
+            async handleSubmit(e) {
+                e.preventDefault();
+                
+                if (!this.validateAllFields()) {
+                    this.submitBtn.style.animation = 'shake 0.5s ease-in-out';
+                    setTimeout(() => {
+                        this.submitBtn.style.animation = '';
+                    }, 500);
+                    return;
+                }
+                
+                this.showLoadingState();
+                
+                try {
+                    await this.simulateFormSubmission();
+                    this.showSuccessMessage();
+                } catch (error) {
+                    this.showErrorMessage('Failed to send message. Please try again.');
+                } finally {
+                    this.hideLoadingState();
+                }
+            }
+
+            showLoadingState() {
+                this.submitBtn.disabled = true;
+                document.getElementById('loadingSpinner').style.display = 'inline-block';
+                document.getElementById('btnText').textContent = 'Sending...';
+            }
+
+            hideLoadingState() {
+                this.submitBtn.disabled = false;
+                document.getElementById('loadingSpinner').style.display = 'none';
+                document.getElementById('btnText').textContent = 'Send Message';
+            }
+
+            async simulateFormSubmission() {
+                return new Promise((resolve) => {
+                    setTimeout(() => {
+                        this.sendSMSMessage();
+                        console.log('Form Data:', {
+                            name: this.nameInput.value.trim(),
+                            email: this.emailInput.value.trim().toLowerCase(),
+                            message: this.messageInput.value.trim(),
+                            timestamp: new Date().toISOString(),
+                            userAgent: navigator.userAgent
+                        });
+                        resolve();
+                    }, 1000);
+                });
+            }
+
+            sendSMSMessage() {
+                const phoneNumber = '7828773853';
+                const name = this.nameInput.value.trim();
+                const email = this.emailInput.value.trim();
+                const message = this.messageInput.value.trim();
+                
+                const formattedMessage = `New Contact Form Submission:
+Name: ${name}
+Email: ${email}
+Message: ${message}
+Sent: ${new Date().toLocaleString()}`;
+
+                const encodedMessage = encodeURIComponent(formattedMessage);
+                
+                const smsURL = `sms:${phoneNumber}?body=${encodedMessage}`;
+                
+                try {
+                    window.open(smsURL, '_self');
+                } catch (error) {
+                    console.error('SMS sending failed:', error);
+                    this.fallbackSMSMethods(phoneNumber, formattedMessage);
+                }
+            }
+
+            fallbackSMSMethods(phoneNumber, message) {
+                const encodedMessage = encodeURIComponent(message);
+                
+                const fallbackURLs = [
+                    `sms://${phoneNumber}?body=${encodedMessage}`,
+                    `sms:${phoneNumber}&body=${encodedMessage}`,
+                    `sms:${phoneNumber};body=${encodedMessage}`,
+                    `tel:${phoneNumber}`
+                ];
+
+                let methodWorked = false;
+
+                fallbackURLs.forEach((url, index) => {
+                    if (!methodWorked) {
+                        try {
+                            setTimeout(() => {
+                                window.location.href = url;
+                            }, index * 500);
+                        } catch (error) {
+                            console.error(`Fallback method ${index + 1} failed:`, error);
+                        }
+                    }
+                });
+
+                if (!methodWorked) {
+                    this.showManualSMSInstructions(phoneNumber, message);
+                }
+            }
+
+            showManualSMSInstructions(phoneNumber, message) {
+                const instructionDiv = document.createElement('div');
+                instructionDiv.style.cssText = `
+                    position: fixed;
+                    top: 50%;
+                    left: 50%;
+                    transform: translate(-50%, -50%);
+                    background: white;
+                    padding: 30px;
+                    border-radius: 15px;
+                    box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+                    z-index: 1000;
+                    max-width: 90%;
+                    max-height: 80%;
+                    overflow-y: auto;
+                    border: 2px solid #667eea;
+                `;
+
+                instructionDiv.innerHTML = `
+                    <h3 style="color: #333; margin-bottom: 15px;">Manual SMS Instructions</h3>
+                    <p style="margin-bottom: 10px;"><strong>Send to:</strong> ${phoneNumber}</p>
+                    <p style="margin-bottom: 10px;"><strong>Message:</strong></p>
+                    <textarea readonly style="width: 100%; height: 150px; padding: 10px; border: 1px solid #ddd; border-radius: 5px; font-family: monospace; font-size: 12px;">${message}</textarea>
+                    <div style="margin-top: 15px; text-align: center;">
+                        <button onclick="this.parentElement.parentElement.remove()" style="background: #667eea; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer;">Close</button>
+                        <button onclick="navigator.clipboard.writeText('${message.replace(/'/g, "\\'")}'); alert('Message copied to clipboard!')" style="background: #27ae60; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; margin-left: 10px;">Copy Message</button>
+                    </div>
+                `;
+
+                document.body.appendChild(instructionDiv);
+
+                const overlay = document.createElement('div');
+                overlay.style.cssText = `
+                    position: fixed;
+                    top: 0;
+                    left: 0;
+                    width: 100%;
+                    height: 100%;
+                    background: rgba(0,0,0,0.5);
+                    z-index: 999;
+                `;
+                document.body.appendChild(overlay);
+
+                overlay.onclick = () => {
+                    instructionDiv.remove();
+                    overlay.remove();
+                };
+            }
+
+            showSuccessMessage() {
+                this.form.style.display = 'none';
+                this.successMessage.style.display = 'block';
+                
+                setTimeout(() => {
+                    this.resetForm();
+                }, 5000);
+            }
+
+            showErrorMessage(message) {
+                alert(message);
+            }
+
+            resetForm() {
+                this.form.reset();
+                this.form.style.display = 'block';
+                this.successMessage.style.display = 'none';
+                
+                ['name', 'email', 'message'].forEach(field => {
+                    this.clearFieldError(field);
+                    const input = document.getElementById(field);
+                    input.classList.remove('success');
+                });
+                
+                document.getElementById('formStats').style.display = 'none';
+                this.updateCharacterCounter();
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            new ContactFormValidator();
+        });
+
+        document.addEventListener('keydown', (e) => {
+            if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+                document.getElementById('contactForm').dispatchEvent(new Event('submit'));
+            }
+        });
+    </script>
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
